@@ -26,8 +26,8 @@ in
 
       # ── Autostart ───────────────────────────────────────────────────────
       exec-once = [
-        "swww-daemon"
-        "swww img ~/.config/wallpaper.jpg"
+        "awww-daemon"
+        "awww img ~/.config/wallpaper.jpg"
         "waybar"
         "mako"
         "wl-paste --type text --watch cliphist store"

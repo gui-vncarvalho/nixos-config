@@ -42,10 +42,10 @@
   # Descomente o bloco do seu hardware:
 
   # Intel:
-  # hardware.opengl.extraPackages = with pkgs; [ intel-media-driver ];
+  # hardware.graphics.extraPackages = with pkgs; [ intel-media-driver ];
 
   # AMD:
-  # hardware.opengl.enable = true;
+  # hardware.graphics.enable = true;
 
   # NVIDIA (troque pela versão correta do driver):
   # hardware.nvidia.modesetting.enable = true;
@@ -76,7 +76,7 @@
     nerd-fonts.fira-code
     inter
     noto-fonts
-    noto-fonts-emoji
+    noto-fonts-color-emoji
   ];
 
   # ── Usuário ───────────────────────────────────────────────────────────────
