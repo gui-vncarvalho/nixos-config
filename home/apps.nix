@@ -14,7 +14,7 @@
     jq               # processar JSON no terminal
 
     # ── Wayland essentials ──────────────────────────────────────────────────
-    swww             # wallpaper com transições
+    awww             # wallpaper com transições
     mako             # notificações
     wofi             # launcher
     grimblast        # screenshots (wraper do grim)
@@ -150,36 +150,38 @@
 
   # ── Mako — notificações ─────────────────────────────────────────────────
   services.mako = {
-    enable            = true;
-    font              = "JetBrainsMono Nerd Font 12";
-    backgroundColor   = "#1e1e2e";
-    textColor         = "#cdd6f4";
-    borderColor       = "#cba6f7";
-    borderRadius      = 10;
-    borderSize        = 2;
-    padding           = "12,16";
-    margin            = "8";
-    defaultTimeout    = 5000;
-    ignoreTimeout     = false;
-    width             = 350;
+    enable = true;
+    settings = {
+      font = "JetBrainsMono Nerd Font 12";
+      background-color = "#1e1e2e";
+      text-color = "#cdd6f4";
+      border-color = "#cba6f7";
+      border-radius = 10;
+      border-size = 2;
+      padding = "12,16";
+      margin = "8";
+      default-timeout = 5000;
+      ignore-timeout = false;
+      width = 350;
 
-    extraConfig = ''
-      [urgency=high]
-      border-color=#f38ba8
-      default-timeout=0
-    '';
+      "urgency=high" = {
+        border-color = "#f38ba8";
+        default-timeout = 0;
+      };
+    };
   };
 
   # ── Git ─────────────────────────────────────────────────────────────────
   programs.git = {
-    enable      = true;
-    userName    = "Guilherme Vila Nova";
-    userEmail   = "guilhercraft@gmail.com";
-    extraConfig = {
+    enable = true;
+    settings = {
+      user.name = "Guilherme Vila Nova";
+      user.email = "guilhercraft@gmail.com";
       init.defaultBranch = "develop";
-      pull.rebase        = false;
+      pull.rebase = false;
       push.autoSetupRemote = true;
-      core.editor        = "nvim";
+      core.editor = "nvim";
+      signing.format = "openpgp";
     };
   };
 
