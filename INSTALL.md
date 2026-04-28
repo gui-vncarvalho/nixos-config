@@ -3,37 +3,69 @@
 > **Importante:** no live ISO, **não use** `nixos-rebuild switch` para instalar.
 > Use `nixos-install --flake ...` após montar em `/mnt`.
 
-## Fluxo recomendado (máquina nova)
+## Comandos exatos (UEFI + disco único + root em ext4)
 
-1. Boot no ISO do NixOS.
-2. Conecte na internet:
-   - Ethernet: normalmente automático.
-   - Wi-Fi: `nmtui` (ou `nmcli`).
-3. Particione e formate o disco.
-   - Exemplo (ajuste o disco/dispositivos):
-     - EFI (FAT32)
-     - Root (ext4/btrfs/xfs)
-4. Monte o root em `/mnt`.
-   - Exemplo: `sudo mount /dev/disk/by-label/nixos /mnt`
-5. Crie e monte a EFI em `/mnt/boot`.
-   - Exemplo:
-     - `sudo mkdir -p /mnt/boot`
-     - `sudo mount /dev/disk/by-label/EFI /mnt/boot`
-6. Clone este repositório em `/mnt/etc/nixos`.
-   - HTTPS: `git clone <repo-url> /mnt/etc/nixos`
-   - SSH: `git clone git@github.com:<owner>/<repo>.git /mnt/etc/nixos`
-7. Gere a configuração de hardware para o sistema alvo:
-   - `sudo nixos-generate-config --root /mnt`
-8. Copie/substitua o `hardware-configuration.nix` gerado para dentro do repo (raiz de `/mnt/etc/nixos`):
-   - Se o gerado estiver em outro local: `sudo cp <origem>/hardware-configuration.nix /mnt/etc/nixos/hardware-configuration.nix`
-   - Se você gerou já em `/mnt` e o arquivo caiu no próprio repo, apenas confirme que ele existe.
-9. Entre no repo e adicione o arquivo ao git (obrigatório para flakes):
-   - `cd /mnt/etc/nixos`
-   - `git add hardware-configuration.nix`
-10. Instale com o flake/hostname corretos:
-    - `sudo nixos-install --flake /mnt/etc/nixos#nixos`
-11. Reinicie:
-    - `reboot`
+> **Atenção:** os comandos abaixo apagam o disco selecionado.
+> Exemplo usa `DISK=/dev/nvme0n1`. Troque se necessário (`/dev/sda`, etc).
+
+```bash
+# 1) virar root no live ISO
+sudo -i
+
+# 2) (opcional) teclado ABNT2
+loadkeys br-abnt2
+
+# 3) internet (Wi-Fi; com cabo geralmente já funciona)
+nmtui
+
+# 4) confirmar nome do disco
+lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS
+
+# 5) definir disco alvo
+DISK=/dev/nvme0n1
+
+# 6) recriar tabela GPT e partições (EFI + ROOT)
+parted -s "$DISK" mklabel gpt
+parted -s "$DISK" mkpart ESP fat32 1MiB 513MiB
+parted -s "$DISK" set 1 esp on
+parted -s "$DISK" mkpart ROOT ext4 513MiB 100%
+
+# 7) resolver nome das partições (nvme vs sata)
+if [[ "$DISK" == *"nvme"* ]]; then
+  EFI_PART="${DISK}p1"
+  ROOT_PART="${DISK}p2"
+else
+  EFI_PART="${DISK}1"
+  ROOT_PART="${DISK}2"
+fi
+
+# 8) formatar partições
+mkfs.fat -F 32 "$EFI_PART"
+mkfs.ext4 -L nixos "$ROOT_PART"
+
+# 9) montar sistema destino em /mnt
+mount "$ROOT_PART" /mnt
+mkdir -p /mnt/boot
+mount "$EFI_PART" /mnt/boot
+
+# 10) clonar seu repo para o destino
+git clone <URL_DO_REPO> /mnt/etc/nixos
+# ou SSH:
+# git clone git@github.com:<owner>/<repo>.git /mnt/etc/nixos
+
+# 11) gerar hardware config para o sistema em /mnt
+nixos-generate-config --root /mnt
+
+# 12) garantir que o arquivo está no repo e rastreado pelo git
+cd /mnt/etc/nixos
+git add hardware-configuration.nix
+
+# 13) instalar via flake output "nixos"
+nixos-install --flake /mnt/etc/nixos#nixos
+
+# 14) reboot
+reboot
+```
 
 ---
 
